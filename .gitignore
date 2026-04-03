@@ -19,3 +19,5 @@ UserSettings/
 *.mdb
 
 .DS_Store
+.vs/
+.vscode/
