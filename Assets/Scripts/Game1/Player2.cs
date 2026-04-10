@@ -1,0 +1,49 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Player2 : MonoBehaviour
+{
+    public Tile currentTile;
+    public float moveDuration = 0.15f;
+
+    private bool isMoving;
+
+    void Update()
+    {
+        if (isMoving || currentTile == null) return;
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow)) TryMove(currentTile.left);
+        if (Input.GetKeyDown(KeyCode.RightArrow)) TryMove(currentTile.right);
+        if (Input.GetKeyDown(KeyCode.UpArrow)) TryMove(currentTile.up);
+        if (Input.GetKeyDown(KeyCode.DownArrow)) TryMove(currentTile.down);
+    }
+
+    void TryMove(Tile target)
+    {
+        if (target == null) return;
+        StartCoroutine(MoveToTile(target));
+    }
+
+    System.Collections.IEnumerator MoveToTile(Tile target)
+    {
+        isMoving = true;
+
+        Vector3 start = transform.position;
+        Vector3 end = target.GetPosition(PlayerOwner.Player2);
+
+        currentTile = target;
+
+        float t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime / moveDuration;
+            transform.position = Vector3.Lerp(start, end, t);
+            yield return null;
+        }
+
+        transform.position = end;
+        isMoving = false;
+    }
+}
