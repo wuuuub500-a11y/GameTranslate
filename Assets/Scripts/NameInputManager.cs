@@ -11,7 +11,7 @@ public class NameInputManager : MonoBehaviour
     public TMP_InputField playerBInput;
 
     [Header("下一个场景名")]
-    public string nextSceneName = "DraftScene";
+    public string nextSceneName = "SelectScene";
 
     private void Start()
     {
@@ -23,6 +23,7 @@ public class NameInputManager : MonoBehaviour
 
     private void Update()
     {
+
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             TryEnterNextScene();

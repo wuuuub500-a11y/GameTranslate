@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 286774741}
   - component: {fileID: 286774739}
   m_Layer: 5
-  m_Name: InputField (TMP)
+  m_Name: InputField B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -962,7 +962,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 860500632}
-  - component: {fileID: 860500631}
+  - component: {fileID: 860500633}
   m_Layer: 0
   m_Name: NameUIManager
   m_TagString: Untagged
@@ -970,21 +970,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &860500631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 860500630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c44dd8415b208d448511faadd634659, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerAInput: {fileID: 1713200576}
-  playerBInput: {fileID: 286774739}
-  nextSceneName: SelectScene
 --- !u!4 &860500632
 Transform:
   m_ObjectHideFlags: 0
@@ -1000,6 +985,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &860500633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860500630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f0081d537589241a95a5e517e82981, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerAInput: {fileID: 1713200576}
+  playerBInput: {fileID: 286774739}
+  nextSceneName: SelectScene
 --- !u!1 &925588299
 GameObject:
   m_ObjectHideFlags: 0
@@ -1575,7 +1575,7 @@ GameObject:
   - component: {fileID: 1713200574}
   - component: {fileID: 1713200576}
   m_Layer: 5
-  m_Name: InputField (TMP)
+  m_Name: InputField A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
