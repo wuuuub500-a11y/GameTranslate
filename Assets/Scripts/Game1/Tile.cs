@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+
+    [Header("生成物")]
+    public GameObject currentObject;
+    [Header("格子坐标")]
+    public int floor; // 0 = 一楼，1 = 二楼
+    public int x;
+
     public Tile left;
     public Tile right;
     public Tile up;

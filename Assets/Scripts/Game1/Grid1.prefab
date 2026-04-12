@@ -100,6 +100,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aae1562604ad8b4493e370b473b9e6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentObject: {fileID: 0}
+  floor: 0
+  x: 0
   left: {fileID: 0}
   right: {fileID: 0}
   up: {fileID: 0}

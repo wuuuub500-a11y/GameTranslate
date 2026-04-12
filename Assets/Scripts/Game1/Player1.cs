@@ -9,14 +9,31 @@ public class Player1 : MonoBehaviour
 
     private bool isMoving;
 
+    [Header("清理设置")]
+    public float clearTime = 1.5f;
+
+    [Header("动画")]
+    public Animator animator;
+
+    private bool isBusy;
+
     void Update()
     {
         if (isMoving || currentTile == null) return;
+
+        if (isBusy) return;
 
         if (Input.GetKeyDown(KeyCode.A)) TryMove(currentTile.left);
         if (Input.GetKeyDown(KeyCode.D)) TryMove(currentTile.right);
         if (Input.GetKeyDown(KeyCode.W)) TryMove(currentTile.up);
         if (Input.GetKeyDown(KeyCode.S)) TryMove(currentTile.down);
+
+        
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            TryClear();
+        }
     }
 
     void TryMove(Tile target)
@@ -45,5 +62,30 @@ public class Player1 : MonoBehaviour
 
         transform.position = end;
         isMoving = false;
+    }
+
+    void TryClear()
+    {
+        if (currentTile == null) return;
+
+        if (currentTile.currentObject == null) return;
+
+        StartCoroutine(ClearRoutine());
+    }
+
+    IEnumerator ClearRoutine()
+    {
+        isBusy = true;
+
+        // 播放动画
+        if (animator != null)
+            animator.SetTrigger("Clear");
+
+        yield return new WaitForSeconds(clearTime);
+
+        Destroy(currentTile.currentObject);
+        currentTile.currentObject = null;
+
+        isBusy = false;
     }
 }
