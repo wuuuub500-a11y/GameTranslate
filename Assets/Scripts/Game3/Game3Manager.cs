@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class Game3Manager : MonoBehaviour
@@ -11,28 +10,31 @@ public class Game3Manager : MonoBehaviour
     public TMP_Text scoreText;
     public TMP_Text finalResultText;
 
-    [Header("玩家图片")]
-    public Image playerAImage;
-    public Image playerBImage;
+    [Header("玩家Animator")]
+    public Animator playerAAnimator;
+    public Animator playerBAnimator;
 
-    [Header("A图片")]
-    public Sprite aIdleSprite;
-    public Sprite aUpSprite;
-    public Sprite aDownSprite;
-    public Sprite aLeftSprite;
-    public Sprite aRightSprite;
+    [Header("A动画状态名")]
+    public string aIdleState = "A_Idle";
+    public string aUpState = "A_Up";
+    public string aDownState = "A_Down";
+    public string aLeftState = "A_Left";
+    public string aRightState = "A_Right";
 
-    [Header("B图片")]
-    public Sprite bIdleSprite;
-    public Sprite bUpSprite;
-    public Sprite bDownSprite;
-    public Sprite bLeftSprite;
-    public Sprite bRightSprite;
+    [Header("B动画状态名")]
+    public string bIdleState = "B_Idle";
+    public string bUpState = "B_Up";
+    public string bDownState = "B_Down";
+    public string bLeftState = "B_Left";
+    public string bRightState = "B_Right";
+
+    [Header("动画时长")]
+    public float aActionDuration = 0.5f;
+    public float bActionDuration = 0.5f;
 
     [Header("设置")]
     public int maxRounds = 3;
     public int winRounds = 2;
-    public float afterInputDelay = 0.5f;
 
     private int currentRound = 1;
     private int playerAScore = 0;
@@ -57,10 +59,14 @@ public class Game3Manager : MonoBehaviour
 
     void Start()
     {
-        finalResultText.gameObject.SetActive(false);
+        if (finalResultText != null)
+            finalResultText.gameObject.SetActive(false);
 
-        scoreText.transform.SetAsLastSibling();
-        finalResultText.transform.SetAsLastSibling();
+        if (scoreText != null)
+            scoreText.transform.SetAsLastSibling();
+
+        if (finalResultText != null)
+            finalResultText.transform.SetAsLastSibling();
 
         ResetToIdle();
         UpdateScoreUI();
@@ -75,11 +81,12 @@ public class Game3Manager : MonoBehaviour
         ReadPlayerAInput();
         ReadPlayerBInput();
 
+        // 两个人都输入完后，再同时播动画并结算
         if (playerAChosen && playerBChosen)
         {
             canInput = false;
             roundResolving = true;
-            StartCoroutine(ResolveRound());
+            StartCoroutine(PlayAnimationsThenResolve());
         }
     }
 
@@ -89,7 +96,8 @@ public class Game3Manager : MonoBehaviour
                playerAScore < winRounds &&
                playerBScore < winRounds)
         {
-            roundText.text = $"第 {currentRound} / {maxRounds} 轮";
+            if (roundText != null)
+                roundText.text = $"第 {currentRound} / {maxRounds} 轮";
 
             ResetRoundState();
             ResetToIdle();
@@ -98,15 +106,11 @@ public class Game3Manager : MonoBehaviour
 
             canInput = true;
 
-            while (roundResolving == false && canInput == true)
-            {
+            while (!roundResolving && canInput)
                 yield return null;
-            }
 
             while (roundResolving)
-            {
                 yield return null;
-            }
 
             currentRound++;
         }
@@ -116,24 +120,31 @@ public class Game3Manager : MonoBehaviour
 
     IEnumerator Countdown()
     {
-        countdownText.gameObject.SetActive(true);
-        roundText.gameObject.SetActive(true);
+        if (countdownText != null)
+            countdownText.gameObject.SetActive(true);
+
+        if (roundText != null)
+            roundText.gameObject.SetActive(true);
 
         for (int i = 4; i > 0; i--)
         {
-            countdownText.text = i.ToString();
+            if (countdownText != null)
+                countdownText.text = i.ToString();
+
             yield return new WaitForSeconds(1f);
         }
 
-        countdownText.gameObject.SetActive(false);
-        roundText.gameObject.SetActive(false);
+        if (countdownText != null)
+            countdownText.gameObject.SetActive(false);
+
+        if (roundText != null)
+            roundText.gameObject.SetActive(false);
     }
 
     void ResetRoundState()
     {
         canInput = false;
         roundResolving = false;
-
         playerAChosen = false;
         playerBChosen = false;
     }
@@ -146,29 +157,25 @@ public class Game3Manager : MonoBehaviour
         {
             playerAChoice = Direction.Left;
             playerAChosen = true;
-            ShowPlayerA(Direction.Left);
-            Debug.Log("A按了 ←");
+            Debug.Log("A选择了 ←");
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
             playerAChoice = Direction.Up;
             playerAChosen = true;
-            ShowPlayerA(Direction.Up);
-            Debug.Log("A按了 ↑");
+            Debug.Log("A选择了 ↑");
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
             playerAChoice = Direction.Down;
             playerAChosen = true;
-            ShowPlayerA(Direction.Down);
-            Debug.Log("A按了 ↓");
+            Debug.Log("A选择了 ↓");
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
             playerAChoice = Direction.Right;
             playerAChosen = true;
-            ShowPlayerA(Direction.Right);
-            Debug.Log("A按了 →");
+            Debug.Log("A选择了 →");
         }
     }
 
@@ -180,107 +187,99 @@ public class Game3Manager : MonoBehaviour
         {
             playerBChoice = Direction.Left;
             playerBChosen = true;
-            ShowPlayerB(Direction.Left);
-            Debug.Log("B按了 ←");
+            Debug.Log("B选择了 ←");
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             playerBChoice = Direction.Up;
             playerBChosen = true;
-            ShowPlayerB(Direction.Up);
-            Debug.Log("B按了 ↑");
+            Debug.Log("B选择了 ↑");
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             playerBChoice = Direction.Down;
             playerBChosen = true;
-            ShowPlayerB(Direction.Down);
-            Debug.Log("B按了 ↓");
+            Debug.Log("B选择了 ↓");
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             playerBChoice = Direction.Right;
             playerBChosen = true;
-            ShowPlayerB(Direction.Right);
-            Debug.Log("B按了 →");
+            Debug.Log("B选择了 →");
         }
     }
 
-    void ShowPlayerA(Direction dir)
+    IEnumerator PlayAnimationsThenResolve()
     {
-        switch (dir)
-        {
-            case Direction.Up:
-                playerAImage.sprite = aUpSprite;
-                break;
-            case Direction.Down:
-                playerAImage.sprite = aDownSprite;
-                break;
-            case Direction.Left:
-                playerAImage.sprite = aLeftSprite;
-                break;
-            case Direction.Right:
-                playerAImage.sprite = aRightSprite;
-                break;
-        }
+        // 两个人都输入完后，同时播放各自动画
+        PlayPlayerAAnimation(playerAChoice);
+        PlayPlayerBAnimation(playerBChoice);
 
-        PopEffect(playerAImage.transform);
+        Debug.Log("A和B开始同时播放动画");
+
+        // 等两个动画都播完
+        float waitTime = Mathf.Max(aActionDuration, bActionDuration);
+        yield return new WaitForSeconds(waitTime);
+
+        // 再判定输赢
+        ResolveRound();
+
+        roundResolving = false;
     }
 
-    void ShowPlayerB(Direction dir)
+    void PlayPlayerAAnimation(Direction dir)
     {
+        if (playerAAnimator == null) return;
+
         switch (dir)
         {
             case Direction.Up:
-                playerBImage.sprite = bUpSprite;
+                playerAAnimator.Play(aUpState, 0, 0f);
                 break;
             case Direction.Down:
-                playerBImage.sprite = bDownSprite;
+                playerAAnimator.Play(aDownState, 0, 0f);
                 break;
             case Direction.Left:
-                playerBImage.sprite = bLeftSprite;
+                playerAAnimator.Play(aLeftState, 0, 0f);
                 break;
             case Direction.Right:
-                playerBImage.sprite = bRightSprite;
+                playerAAnimator.Play(aRightState, 0, 0f);
                 break;
         }
+    }
 
-        PopEffect(playerBImage.transform);
+    void PlayPlayerBAnimation(Direction dir)
+    {
+        if (playerBAnimator == null) return;
+
+        switch (dir)
+        {
+            case Direction.Up:
+                playerBAnimator.Play(bUpState, 0, 0f);
+                break;
+            case Direction.Down:
+                playerBAnimator.Play(bDownState, 0, 0f);
+                break;
+            case Direction.Left:
+                playerBAnimator.Play(bLeftState, 0, 0f);
+                break;
+            case Direction.Right:
+                playerBAnimator.Play(bRightState, 0, 0f);
+                break;
+        }
     }
 
     void ResetToIdle()
     {
-        playerAImage.sprite = aIdleSprite;
-        playerBImage.sprite = bIdleSprite;
+        if (playerAAnimator != null)
+            playerAAnimator.Play(aIdleState, 0, 0f);
 
-        playerAImage.transform.localScale = Vector3.one;
-        playerBImage.transform.localScale = Vector3.one;
+        if (playerBAnimator != null)
+            playerBAnimator.Play(bIdleState, 0, 0f);
     }
 
-    void PopEffect(Transform t)
+    void ResolveRound()
     {
-        t.localScale = Vector3.one * 1.2f;
-        StartCoroutine(ScaleBack(t));
-    }
-
-    IEnumerator ScaleBack(Transform t)
-    {
-        yield return new WaitForSeconds(0.1f);
-        t.localScale = Vector3.one;
-    }
-
-    IEnumerator ResolveRound()
-    {
-        yield return new WaitForSeconds(afterInputDelay);
-
-        // 双保险：没有双方输入就不结算
-        if (!playerAChosen || !playerBChosen)
-        {
-            Debug.LogWarning("本轮未完成输入，不进行结算");
-            roundResolving = false;
-            yield break;
-        }
-
         Debug.Log("A最终选择: " + playerAChoice);
         Debug.Log("B最终选择: " + playerBChoice);
 
@@ -296,18 +295,18 @@ public class Game3Manager : MonoBehaviour
         }
 
         UpdateScoreUI();
-
-        roundResolving = false;
     }
 
     void UpdateScoreUI()
     {
-        scoreText.text = $"{playerAScore} : {playerBScore}";
-        Debug.Log("当前比分: " + scoreText.text);
+        if (scoreText != null)
+            scoreText.text = $"{playerAScore} : {playerBScore}";
     }
 
     void ShowFinalResult()
     {
+        if (finalResultText == null) return;
+
         finalResultText.gameObject.SetActive(true);
 
         if (playerAScore >= winRounds)
