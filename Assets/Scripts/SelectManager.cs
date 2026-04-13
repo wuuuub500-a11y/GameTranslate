@@ -9,27 +9,28 @@ public class SelectManager : MonoBehaviour
     public TMP_Text titleText;
     public TMP_Text remainingText;
     public TMP_Text scoreText;
-    public TMP_Text finalResultText;
 
     private void Start()
     {
         UpdateUI();
-
-        if (GameData.remainingGames.Count == 0)
-        {
-            ShowFinalResult();
-        }
     }
 
     void UpdateUI()
     {
-        titleText.text = "Select Game";
-        scoreText.text = $"{GameData.playerAName} {GameData.playerAWins} : {GameData.playerBWins} {GameData.playerBName}";
+        if (titleText != null)
+            titleText.text = "Select Game";
 
-        remainingText.text = "Remaining:\n";
-        foreach (string game in GameData.remainingGames)
+        if (scoreText != null)
+            scoreText.text = $"{GameData.playerAName} {GameData.playerAWins} : {GameData.playerBWins} {GameData.playerBName}";
+
+        if (remainingText != null)
         {
-            remainingText.text += game + "\n";
+            remainingText.text = "Remaining:\n";
+
+            foreach (string game in GameData.remainingGames)
+            {
+                remainingText.text += game + "\n";
+            }
         }
     }
 
@@ -43,23 +44,5 @@ public class SelectManager : MonoBehaviour
         GameData.playedGames.Add(gameSceneName);
 
         SceneManager.LoadScene(gameSceneName);
-    }
-
-    void ShowFinalResult()
-    {
-        finalResultText.gameObject.SetActive(true);
-
-        if (GameData.playerAWins > GameData.playerBWins)
-        {
-            finalResultText.text = GameData.playerAName + " Wins!";
-        }
-        else if (GameData.playerBWins > GameData.playerAWins)
-        {
-            finalResultText.text = GameData.playerBName + " Wins!";
-        }
-        else
-        {
-            finalResultText.text = "Draw!";
-        }
     }
 }

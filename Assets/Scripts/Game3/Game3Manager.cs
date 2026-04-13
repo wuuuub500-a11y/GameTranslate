@@ -1,5 +1,6 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class Game3Manager : MonoBehaviour
@@ -10,29 +11,43 @@ public class Game3Manager : MonoBehaviour
     public TMP_Text scoreText;
     public TMP_Text finalResultText;
 
-    [Header("Íæ¼ÒAnimator")]
+    [Header("ç©å®¶Animator")]
     public Animator playerAAnimator;
     public Animator playerBAnimator;
 
-    [Header("A¶¯»­×´Ì¬Ãû")]
+    [Header("AåŠ¨ç”»çŠ¶æ€å")]
     public string aIdleState = "A_Idle";
-    public string aUpState = "A_Up";
-    public string aDownState = "A_Down";
-    public string aLeftState = "A_Left";
-    public string aRightState = "A_Right";
+    public string aUpState = "A_up";
+    public string aDownState = "A_down";
+    public string aLeftState = "A_left";
+    public string aRightState = "A_right";
 
-    [Header("B¶¯»­×´Ì¬Ãû")]
+    [Header("BåŠ¨ç”»çŠ¶æ€å")]
     public string bIdleState = "B_Idle";
     public string bUpState = "B_Up";
     public string bDownState = "B_Down";
     public string bLeftState = "B_Left";
     public string bRightState = "B_Right";
 
-    [Header("¶¯»­Ê±³¤")]
+    [Header("åŠ¨ç”»æ—¶é•¿")]
     public float aActionDuration = 0.5f;
     public float bActionDuration = 0.5f;
 
-    [Header("ÉèÖÃ")]
+    [Header("éŸ³æ•ˆ")]
+    public AudioSource inputAudioSource;
+    public AudioSource roundResultAudioSource;
+
+    public AudioClip playerAInputSfx;
+    public AudioClip playerBInputSfx;
+
+    public AudioClip playerAWinSfx;
+    public AudioClip playerBWinSfx;
+
+    [Header("ç»“ç®—è·³è½¬")]
+    public string nextSceneName = "ResultBridgeScene";
+    public float endStayDuration = 4f;
+
+    [Header("è®¾ç½®")]
     public int maxRounds = 3;
     public int winRounds = 2;
 
@@ -42,6 +57,7 @@ public class Game3Manager : MonoBehaviour
 
     private bool canInput = false;
     private bool roundResolving = false;
+    private bool gameEnded = false;
 
     private bool playerAChosen = false;
     private bool playerBChosen = false;
@@ -62,12 +78,6 @@ public class Game3Manager : MonoBehaviour
         if (finalResultText != null)
             finalResultText.gameObject.SetActive(false);
 
-        if (scoreText != null)
-            scoreText.transform.SetAsLastSibling();
-
-        if (finalResultText != null)
-            finalResultText.transform.SetAsLastSibling();
-
         ResetToIdle();
         UpdateScoreUI();
 
@@ -76,12 +86,11 @@ public class Game3Manager : MonoBehaviour
 
     void Update()
     {
-        if (!canInput || roundResolving) return;
+        if (!canInput || roundResolving || gameEnded) return;
 
         ReadPlayerAInput();
         ReadPlayerBInput();
 
-        // Á½¸öÈË¶¼ÊäÈëÍêºó£¬ÔÙÍ¬Ê±²¥¶¯»­²¢½áËã
         if (playerAChosen && playerBChosen)
         {
             canInput = false;
@@ -97,7 +106,7 @@ public class Game3Manager : MonoBehaviour
                playerBScore < winRounds)
         {
             if (roundText != null)
-                roundText.text = $"µÚ {currentRound} / {maxRounds} ÂÖ";
+                roundText.text = $"ç¬¬ {currentRound} / {maxRounds} è½®";
 
             ResetRoundState();
             ResetToIdle();
@@ -115,7 +124,7 @@ public class Game3Manager : MonoBehaviour
             currentRound++;
         }
 
-        ShowFinalResult();
+        yield return StartCoroutine(EndGame());
     }
 
     IEnumerator Countdown()
@@ -123,22 +132,13 @@ public class Game3Manager : MonoBehaviour
         if (countdownText != null)
             countdownText.gameObject.SetActive(true);
 
-        if (roundText != null)
-            roundText.gameObject.SetActive(true);
-
-        for (int i = 4; i > 0; i--)
+        for (int i = 3; i > 0; i--)
         {
-            if (countdownText != null)
-                countdownText.text = i.ToString();
-
+            countdownText.text = i.ToString();
             yield return new WaitForSeconds(1f);
         }
 
-        if (countdownText != null)
-            countdownText.gameObject.SetActive(false);
-
-        if (roundText != null)
-            roundText.gameObject.SetActive(false);
+        countdownText.gameObject.SetActive(false);
     }
 
     void ResetRoundState()
@@ -157,25 +157,25 @@ public class Game3Manager : MonoBehaviour
         {
             playerAChoice = Direction.Left;
             playerAChosen = true;
-            Debug.Log("AÑ¡ÔñÁË ¡û");
+            PlayInputSfx(playerAInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.W))
         {
             playerAChoice = Direction.Up;
             playerAChosen = true;
-            Debug.Log("AÑ¡ÔñÁË ¡ü");
+            PlayInputSfx(playerAInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
             playerAChoice = Direction.Down;
             playerAChosen = true;
-            Debug.Log("AÑ¡ÔñÁË ¡ı");
+            PlayInputSfx(playerAInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
             playerAChoice = Direction.Right;
             playerAChosen = true;
-            Debug.Log("AÑ¡ÔñÁË ¡ú");
+            PlayInputSfx(playerAInputSfx);
         }
     }
 
@@ -187,41 +187,36 @@ public class Game3Manager : MonoBehaviour
         {
             playerBChoice = Direction.Left;
             playerBChosen = true;
-            Debug.Log("BÑ¡ÔñÁË ¡û");
+            PlayInputSfx(playerBInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             playerBChoice = Direction.Up;
             playerBChosen = true;
-            Debug.Log("BÑ¡ÔñÁË ¡ü");
+            PlayInputSfx(playerBInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             playerBChoice = Direction.Down;
             playerBChosen = true;
-            Debug.Log("BÑ¡ÔñÁË ¡ı");
+            PlayInputSfx(playerBInputSfx);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             playerBChoice = Direction.Right;
             playerBChosen = true;
-            Debug.Log("BÑ¡ÔñÁË ¡ú");
+            PlayInputSfx(playerBInputSfx);
         }
     }
 
     IEnumerator PlayAnimationsThenResolve()
     {
-        // Á½¸öÈË¶¼ÊäÈëÍêºó£¬Í¬Ê±²¥·Å¸÷×Ô¶¯»­
         PlayPlayerAAnimation(playerAChoice);
         PlayPlayerBAnimation(playerBChoice);
 
-        Debug.Log("AºÍB¿ªÊ¼Í¬Ê±²¥·Å¶¯»­");
-
-        // µÈÁ½¸ö¶¯»­¶¼²¥Íê
         float waitTime = Mathf.Max(aActionDuration, bActionDuration);
         yield return new WaitForSeconds(waitTime);
 
-        // ÔÙÅĞ¶¨ÊäÓ®
         ResolveRound();
 
         roundResolving = false;
@@ -231,67 +226,60 @@ public class Game3Manager : MonoBehaviour
     {
         if (playerAAnimator == null) return;
 
-        switch (dir)
-        {
-            case Direction.Up:
-                playerAAnimator.Play(aUpState, 0, 0f);
-                break;
-            case Direction.Down:
-                playerAAnimator.Play(aDownState, 0, 0f);
-                break;
-            case Direction.Left:
-                playerAAnimator.Play(aLeftState, 0, 0f);
-                break;
-            case Direction.Right:
-                playerAAnimator.Play(aRightState, 0, 0f);
-                break;
-        }
+        playerAAnimator.Play(GetAState(dir), 0, 0f);
     }
 
     void PlayPlayerBAnimation(Direction dir)
     {
         if (playerBAnimator == null) return;
 
+        playerBAnimator.Play(GetBState(dir), 0, 0f);
+    }
+
+    string GetAState(Direction dir)
+    {
         switch (dir)
         {
-            case Direction.Up:
-                playerBAnimator.Play(bUpState, 0, 0f);
-                break;
-            case Direction.Down:
-                playerBAnimator.Play(bDownState, 0, 0f);
-                break;
-            case Direction.Left:
-                playerBAnimator.Play(bLeftState, 0, 0f);
-                break;
-            case Direction.Right:
-                playerBAnimator.Play(bRightState, 0, 0f);
-                break;
+            case Direction.Up: return aUpState;
+            case Direction.Down: return aDownState;
+            case Direction.Left: return aLeftState;
+            case Direction.Right: return aRightState;
         }
+        return aIdleState;
+    }
+
+    string GetBState(Direction dir)
+    {
+        switch (dir)
+        {
+            case Direction.Up: return bUpState;
+            case Direction.Down: return bDownState;
+            case Direction.Left: return bLeftState;
+            case Direction.Right: return bRightState;
+        }
+        return bIdleState;
     }
 
     void ResetToIdle()
     {
         if (playerAAnimator != null)
-            playerAAnimator.Play(aIdleState, 0, 0f);
+            playerAAnimator.Play(aIdleState);
 
         if (playerBAnimator != null)
-            playerBAnimator.Play(bIdleState, 0, 0f);
+            playerBAnimator.Play(bIdleState);
     }
 
     void ResolveRound()
     {
-        Debug.Log("A×îÖÕÑ¡Ôñ: " + playerAChoice);
-        Debug.Log("B×îÖÕÑ¡Ôñ: " + playerBChoice);
-
         if (playerAChoice == playerBChoice)
         {
-            Debug.Log("½á¹û£ºÍ¬Ïò ¡ú AµÃ·Ö");
             playerAScore++;
+            PlayRoundResultSfx(playerAWinSfx);
         }
         else
         {
-            Debug.Log("½á¹û£ºÒìÏò ¡ú BµÃ·Ö");
             playerBScore++;
+            PlayRoundResultSfx(playerBWinSfx);
         }
 
         UpdateScoreUI();
@@ -303,17 +291,44 @@ public class Game3Manager : MonoBehaviour
             scoreText.text = $"{playerAScore} : {playerBScore}";
     }
 
-    void ShowFinalResult()
+    IEnumerator EndGame()
     {
-        if (finalResultText == null) return;
+        gameEnded = true;
 
-        finalResultText.gameObject.SetActive(true);
-
+        // â­â­â­ æ ¸å¿ƒï¼šå†™å…¥æ€»æ¯”åˆ† â­â­â­
         if (playerAScore >= winRounds)
-            finalResultText.text = "³ôßäÏ´Ôè°É£¡";
-        else if (playerBScore >= winRounds)
-            finalResultText.text = "³ôßä¾Í²»Ï´£¡";
+        {
+            GameData.playerAWins++;
+        }
         else
-            finalResultText.text = "¶Ô¾Ö½áÊø";
+        {
+            GameData.playerBWins++;
+        }
+
+        if (finalResultText != null)
+        {
+            finalResultText.gameObject.SetActive(true);
+
+            if (playerAScore >= winRounds)
+                finalResultText.text = "æ´—æ¾¡å§è‡­å’ª!";
+            else
+                finalResultText.text = "è‡­å’ªå°±ä¸æ´—!";
+        }
+
+        yield return new WaitForSeconds(endStayDuration);
+
+        SceneManager.LoadScene(nextSceneName);
+    }
+
+    void PlayInputSfx(AudioClip clip)
+    {
+        if (inputAudioSource != null && clip != null)
+            inputAudioSource.PlayOneShot(clip);
+    }
+
+    void PlayRoundResultSfx(AudioClip clip)
+    {
+        if (roundResultAudioSource != null && clip != null)
+            roundResultAudioSource.PlayOneShot(clip);
     }
 }

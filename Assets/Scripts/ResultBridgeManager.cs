@@ -1,53 +1,36 @@
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
 
 public class ResultBridgeManager : MonoBehaviour
 {
-    public TMP_Text infoText;
-    public float waitTime = 1.5f;
+    [Header("åœç•™æ—¶é—´")]
+    public float stayDuration = 3f;
+
+    [Header("åœºæ™¯å")]
+    public string selectSceneName = "SelectScene";
+    public string finalResultSceneName = "FinalResultScene";
 
     private void Start()
     {
-        StartCoroutine(ProcessResult());
+        StartCoroutine(BridgeFlow());
     }
 
-    private System.Collections.IEnumerator ProcessResult()
+    IEnumerator BridgeFlow()
     {
-        // ÏÈ¼ì²é»º´æ½á¹û
-        if (MiniGameResultCache.winner == 1)
-        {
-            GameData.playerAWins++;
+        // çº¯ loading åœç•™
+        yield return new WaitForSeconds(stayDuration);
 
-            if (infoText != null)
-                infoText.text = GameData.playerAName + " Win!";
-        }
-        else if (MiniGameResultCache.winner == 2)
+        // â­ æ ¸å¿ƒåˆ¤æ–­
+        if (GameData.remainingGames == null || GameData.remainingGames.Count == 0)
         {
-            GameData.playerBWins++;
-
-            if (infoText != null)
-                infoText.text = GameData.playerBName + " Win!";
+            Debug.Log("æ‰€æœ‰æ¸¸æˆå·²å®Œæˆ â†’ è¿›å…¥ FinalResultScene");
+            SceneManager.LoadScene(finalResultSceneName);
         }
         else
         {
-            if (infoText != null)
-                infoText.text = "No result";
-        }
-
-        yield return new WaitForSeconds(waitTime);
-
-        // ÓÃÍêÁ¢¿ÌÇå¿Õ£¬·ÀÖ¹ÏÂ´Î´®Êı¾İ
-        MiniGameResultCache.Clear();
-
-        // Èç¹ûÎå¸öÓÎÏ·¶¼ÍæÍêÁË£¬¾Í½ø×îÖÕ½áËã
-        if (GameData.remainingGames.Count == 0)
-        {
-            SceneManager.LoadScene("FinalResultScene");
-        }
-        else
-        {
-            SceneManager.LoadScene("SelectScene");
+            Debug.Log("è¿˜æœ‰å‰©ä½™æ¸¸æˆ â†’ è¿”å› SelectScene");
+            SceneManager.LoadScene(selectSceneName);
         }
     }
 }
