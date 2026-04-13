@@ -88,21 +88,10 @@ public class GameManager_1 : MonoBehaviour
 
     void GoNext()
     {
-        MatchData.currentGameIndex++;
-
-        if (MatchData.currentGameIndex >= MatchData.gameScenes.Length)
-        {
-            // ×Ü½áËã
-            if (MatchData.player1Score > MatchData.player2Score)
-                SceneManager.LoadScene(MatchData.p1WinScene);
-            else
-                SceneManager.LoadScene(MatchData.p2WinScene);
-
-            return;
-        }
+        
 
         SceneManager.LoadScene(
-            MatchData.gameScenes[MatchData.currentGameIndex]
+            "ResultBrigdeScene"
         );
     }
 }

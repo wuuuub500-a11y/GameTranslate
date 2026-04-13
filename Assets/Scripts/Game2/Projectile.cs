@@ -4,8 +4,20 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    void Start()
+    private bool inBin = false;
+
+    //  ±»À¬»øÍ°µ÷ÓÃ
+    public void EnterBin()
     {
-        Destroy(gameObject, 2f);
+        if (inBin) return;
+
+        inBin = true;
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    IEnumerator DestroyAfterDelay()
+    {
+        yield return new WaitForSeconds(3f);
+        Destroy(gameObject);
     }
 }
