@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager_1 : MonoBehaviour
 {
     public static GameManager_1 Instance;
+
+    private bool ended = false;//用来防止重复计分的 需要加这个变量
 
     [Header("时间设置")]
     public float gameTime = 60f;
@@ -58,11 +61,22 @@ public class GameManager_1 : MonoBehaviour
 
         if (dirtyCount >= dirtyThreshold)
         {
-            Debug.Log("Player2 胜利！");
+            if (ended) return;
+            ended = true;
+
+
+            MatchData.player2Score++;
+
+            GoNext();
         }
         else
         {
-            Debug.Log("Player1 胜利！");
+            if (ended) return;
+            ended = true;
+
+            MatchData.player1Score++;
+
+            GoNext();
         }
     }
 
@@ -70,5 +84,25 @@ public class GameManager_1 : MonoBehaviour
     public float GetTime()
     {
         return timer;
+    }
+
+    void GoNext()
+    {
+        MatchData.currentGameIndex++;
+
+        if (MatchData.currentGameIndex >= MatchData.gameScenes.Length)
+        {
+            // 总结算
+            if (MatchData.player1Score > MatchData.player2Score)
+                SceneManager.LoadScene(MatchData.p1WinScene);
+            else
+                SceneManager.LoadScene(MatchData.p2WinScene);
+
+            return;
+        }
+
+        SceneManager.LoadScene(
+            MatchData.gameScenes[MatchData.currentGameIndex]
+        );
     }
 }

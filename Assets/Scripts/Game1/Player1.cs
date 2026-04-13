@@ -8,33 +8,34 @@ public class Player1 : MonoBehaviour
     public float moveDuration = 0.15f;
 
     private bool isMoving;
+    private bool isBusy;
 
-    [Header("清理设置")]
+    [Header("清理")]
     public float clearTime = 1.5f;
 
     [Header("动画")]
     public Animator animator;
 
-    private bool isBusy;
+    [Header("音效")]
+    public AudioSource audioSource;
+
+    public AudioClip moveClip;
+    public AudioClip clearClip;
 
     void Update()
     {
-        if (isMoving || currentTile == null) return;
-
-        if (isBusy) return;
+        if (isMoving || isBusy || currentTile == null) return;
 
         if (Input.GetKeyDown(KeyCode.A)) TryMove(currentTile.left);
         if (Input.GetKeyDown(KeyCode.D)) TryMove(currentTile.right);
         if (Input.GetKeyDown(KeyCode.W)) TryMove(currentTile.up);
         if (Input.GetKeyDown(KeyCode.S)) TryMove(currentTile.down);
 
-        
-
         if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
             TryClear();
-        }
     }
+
+    // ================= MOVE =================
 
     void TryMove(Tile target)
     {
@@ -42,9 +43,22 @@ public class Player1 : MonoBehaviour
         StartCoroutine(MoveToTile(target));
     }
 
-    System.Collections.IEnumerator MoveToTile(Tile target)
+    IEnumerator MoveToTile(Tile target)
     {
         isMoving = true;
+
+        float dx = target.transform.position.x - transform.position.x;
+
+        if (dx > 0.01f)
+            transform.localScale = new Vector3(0.22f, 0.22f, 1);
+        else if (dx < -0.01f)
+            transform.localScale = new Vector3(-0.22f, 0.22f, 1);
+
+        if (animator != null)
+            animator.SetTrigger("Move");
+
+        if (audioSource != null && moveClip != null)
+            audioSource.PlayOneShot(moveClip);
 
         Vector3 start = transform.position;
         Vector3 end = target.GetPosition(PlayerOwner.Player1);
@@ -64,10 +78,11 @@ public class Player1 : MonoBehaviour
         isMoving = false;
     }
 
+    // ================= CLEAR =================
+
     void TryClear()
     {
         if (currentTile == null) return;
-
         if (currentTile.currentObject == null) return;
 
         StartCoroutine(ClearRoutine());
@@ -77,9 +92,11 @@ public class Player1 : MonoBehaviour
     {
         isBusy = true;
 
-        // 播放动画
         if (animator != null)
             animator.SetTrigger("Clear");
+
+        if (audioSource != null && clearClip != null)
+            audioSource.PlayOneShot(clearClip);
 
         yield return new WaitForSeconds(clearTime);
 

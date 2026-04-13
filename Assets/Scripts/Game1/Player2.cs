@@ -8,40 +8,41 @@ public class Player2 : MonoBehaviour
     public float moveDuration = 0.15f;
 
     private bool isMoving;
+    private bool isBusy;
 
-
-    [Header("生成设置")]
+    [Header("建造")]
     public GameObject prefab;
     public float buildTime = 1.5f;
 
     [Header("动画")]
     public Animator animator;
 
-    private bool isBusy;
+    [Header("音效")]
+    public AudioSource audioSource;
+
+    public AudioClip moveClip;
+    public AudioClip buildClip;
 
     void Update()
     {
-
-        if (isBusy) return;
-        if (isMoving || currentTile == null) return;
+        if (isMoving || isBusy || currentTile == null) return;
 
         if (Input.GetKeyDown(KeyCode.LeftArrow)) TryMove(currentTile.left);
         if (Input.GetKeyDown(KeyCode.RightArrow)) TryMove(currentTile.right);
         if (Input.GetKeyDown(KeyCode.UpArrow)) TryMove(currentTile.up);
-        if (Input.GetKeyDown(KeyCode.DownArrow)) TryDown();
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+            TryDown();
 
-       
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            Debug.Log("准备拉屎");
+        if (Input.GetKeyDown(KeyCode.Return))
             TryBuild();
-        }
     }
+
 
     void TryDown()
     {
-        //在二楼 → 直接到一楼同一x格子
+        if (currentTile == null) return;
+
+        // ?? 二楼直接下到一楼同列
         if (currentTile.floor == 1)
         {
             Tile target = GridManager.Instance.GetTile(0, currentTile.x);
@@ -53,12 +54,13 @@ public class Player2 : MonoBehaviour
             }
         }
 
-        // 普通楼梯
+        // ?? 一楼正常走楼梯
         if (currentTile.down != null)
         {
             StartCoroutine(MoveToTile(currentTile.down));
         }
     }
+    // ================= MOVE =================
 
     void TryMove(Tile target)
     {
@@ -66,9 +68,22 @@ public class Player2 : MonoBehaviour
         StartCoroutine(MoveToTile(target));
     }
 
-    System.Collections.IEnumerator MoveToTile(Tile target)
+    IEnumerator MoveToTile(Tile target)
     {
         isMoving = true;
+
+        float dx = target.transform.position.x - transform.position.x;
+
+        if (dx > 0.01f)
+            transform.localScale = new Vector3(0.22f, 0.22f, 1);
+        else if (dx < -0.01f)
+            transform.localScale = new Vector3(-0.22f, 0.22f, 1);
+
+        if (animator != null)
+            animator.SetTrigger("Move");
+
+        if (audioSource != null && moveClip != null)
+            audioSource.PlayOneShot(moveClip);
 
         Vector3 start = transform.position;
         Vector3 end = target.GetPosition(PlayerOwner.Player2);
@@ -88,11 +103,11 @@ public class Player2 : MonoBehaviour
         isMoving = false;
     }
 
+    // ================= BUILD =================
+
     void TryBuild()
     {
         if (currentTile == null) return;
-
-        // 已经有物体
         if (currentTile.currentObject != null) return;
 
         StartCoroutine(BuildRoutine());
@@ -102,15 +117,14 @@ public class Player2 : MonoBehaviour
     {
         isBusy = true;
 
-        // 播放动画
         if (animator != null)
             animator.SetTrigger("Build");
 
+        if (audioSource != null && buildClip != null)
+            audioSource.PlayOneShot(buildClip);
+
         yield return new WaitForSeconds(buildTime);
 
-
-        Debug.Log("拉屎");
-        // 生成
         GameObject obj = Instantiate(prefab, currentTile.centerPoint.position, Quaternion.identity);
         currentTile.currentObject = obj;
 
