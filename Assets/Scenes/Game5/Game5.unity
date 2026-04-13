@@ -245,6 +245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeffdbceaf626f84baa46e80e7ad959b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resultBridgeSceneName: ResultBridgeScene
 --- !u!1 &103424439
 GameObject:
   m_ObjectHideFlags: 0

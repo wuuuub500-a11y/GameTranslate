@@ -91,7 +91,7 @@ public class GameManager_1 : MonoBehaviour
         
 
         SceneManager.LoadScene(
-            "ResultBrigdeScene"
+            "ResultBridgeScene"
         );
     }
 }

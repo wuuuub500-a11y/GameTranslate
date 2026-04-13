@@ -802,7 +802,7 @@ MonoBehaviour:
   mouseScore: 0
   decisionTime: 3
   animationTime: 0.4
-  totalTime: 20
+  totalTime: 16
   tableTransform: {fileID: 1383924236}
   mouseTransform: {fileID: 1668850226}
 --- !u!114 &1035927500
@@ -861,6 +861,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeffdbceaf626f84baa46e80e7ad959b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resultBridgeSceneName: ResultBridgeScene
 --- !u!1 &1192560092
 GameObject:
   m_ObjectHideFlags: 0
