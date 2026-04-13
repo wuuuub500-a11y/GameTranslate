@@ -1,10 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public PlayerHuman human;
     public PlayerMouse mouse;
+
+    private bool ended = false;//用来防止重复计分的 需要加这个变量
 
     public GameObject resultUI;
 
@@ -42,7 +45,8 @@ public class GameManager : MonoBehaviour
 
     IEnumerator PlayRound()
     {
-       
+        resultUI.SetActive(false);
+
         human.ResetChoice();
         mouse.ResetChoice();
 
@@ -74,6 +78,7 @@ public class GameManager : MonoBehaviour
             humanScore++;
             Debug.Log("抓到了！");
             
+            
             resultUI.SetActive(true);
             resultUI.GetComponent<Animator>().SetTrigger("HumanWin");
         }
@@ -95,15 +100,79 @@ public class GameManager : MonoBehaviour
         return human == mouse; 
     }
 
+    
+       
+
+        public void Player1Win()
+        {
+            if (ended) return;
+            ended = true;
+
+
+            MatchData.player1Score++;
+
+            GoNext();
+        }
+
+        public void Player2Win()
+        {
+            if (ended) return;
+            ended = true;
+
+            MatchData.player2Score++;
+
+            GoNext();
+        }
+
+        void GoNext()
+        {
+            MatchData.currentGameIndex++;
+
+            if (MatchData.currentGameIndex >= MatchData.gameScenes.Length)
+            {
+                // 总结算
+                if (MatchData.player1Score > MatchData.player2Score)
+                    SceneManager.LoadScene(MatchData.p1WinScene);
+                else
+                    SceneManager.LoadScene(MatchData.p2WinScene);
+
+                return;
+            }
+
+            SceneManager.LoadScene(
+                MatchData.gameScenes[MatchData.currentGameIndex]
+            );
+        }
+    
+
+
+
     void EndGame()
     {
+        if (ended) return;
+        ended = true;
         Debug.Log("游戏结束");
 
         if (humanScore > mouseScore)
+        {
             Debug.Log("人赢！");
+            Player1Win();
+        }
+
+
         else if (mouseScore > humanScore)
+        {
             Debug.Log("鼠赢！");
+            Player2Win();
+        }
+
+
+
         else
+        { 
             Debug.Log("平局！");
+            GoNext();
+        }
+            
     }
 }
